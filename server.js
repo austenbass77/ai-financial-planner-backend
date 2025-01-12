@@ -4,6 +4,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 
 // Import your routes and middleware
+const userRoutes = require('./routes/userRoutes'); // Import user routes
 const profileRoutes = require('./routes/profileRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const familyMembersRouter = require('./routes/familyMembers');
@@ -18,6 +19,7 @@ app.use(cors()); // Enable CORS for cross-origin requests
 app.use(morgan('dev')); // Logging middleware
 
 // Routes
+app.use('/api/users', userRoutes); // Use user routes under /api/users
 app.use('/api/profile', authenticateUser, profileRoutes);
 app.use('/api/chat', authenticateUser, chatRoutes);
 app.use('/api/family-members', authenticateUser, familyMembersRouter);
