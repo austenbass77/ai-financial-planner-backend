@@ -1,13 +1,17 @@
+// models/index.js
 const { Sequelize } = require('sequelize');
-const User = require('./User');
+const UserModel = require('./User');
 
-// Use the POSTGRES_URI from the environment variables
+// Create a new Sequelize instance
 const sequelize = new Sequelize(process.env.POSTGRES_URI, {
   dialect: 'postgres',
-  logging: false, // Disable SQL logging
+  logging: false,
 });
 
-// Sync models with the database
+// Initialize models
+const User = UserModel(sequelize);
+
+// Sync the models with the database
 sequelize.sync({ alter: true })
   .then(() => {
     console.log('Database synced');
@@ -16,4 +20,7 @@ sequelize.sync({ alter: true })
     console.error('Error syncing database:', err);
   });
 
-module.exports = { sequelize, User };
+module.exports = {
+  sequelize,
+  User,
+};

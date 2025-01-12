@@ -1,23 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const {
-  registerUser,
-  loginUser,
-  getUserProfile,
-  updateUserProfile,
-} = require('../controllers/userController');
+const { loginUser, registerUser, getUserProfile, updateUserProfile } = require('../controllers/userController');
 const authenticateUser = require('../middleware/authenticateUser');
 
-// POST /api/users/register
+// Route to register a new user
 router.post('/register', registerUser);
 
-// POST /api/users/login
+// Route to log in an existing user
 router.post('/login', loginUser);
 
-// GET /api/users/profile
+// Route to get the user's profile (protected route)
 router.get('/profile', authenticateUser, getUserProfile);
 
-// PUT /api/users/profile
+// Placeholder for future PUT route (update user profile)
 router.put('/profile', authenticateUser, updateUserProfile);
 
 module.exports = router;

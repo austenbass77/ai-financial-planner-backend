@@ -1,109 +1,115 @@
 // controllers/userController.js
-
-const bcrypt = require('bcryptjs');
+const { User } = require('../models');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
 
-// Register a new user
-const registerUser = async (req, res) => {
-  const { firstName, lastName, email, password, phone } = req.body;
-
-  try {
-    // Check if user already exists
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create new user
-    const newUser = await User.create({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      phone,
-    });
-
-    // Generate JWT token
-    const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
-
-    res.status(201).json({ token });
-  } catch (error) {
-    console.error('Error registering user:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
+// Function to generate a JWT token
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: '1h',
+  });
 };
 
-// Login user
+// Controller to handle user login
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    // Check if user exists
+    const { email, password } = req.body;
+
+    // Find the user by email
+    console.log('Finding user with email:', email);
     const user = await User.findOne({ where: { email } });
+
+    // Check if user exists
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      console.log('User not found');
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+    // Check if password matches
+    if (user.password !== password) {
+      console.log('Incorrect password');
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
+    // Generate a token
+    const token = generateToken(user.id);
+
+    // Return the token and user info
+    res.json({
+      id: user.id,
+      email: user.email,
+      token,
     });
-
-    res.json({ token });
   } catch (error) {
     console.error('Error logging in user:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// Get user profile
+// Controller to handle user registration
+const registerUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if the user already exists
+    const existingUser = await User.findOne({ where: { email } });
+
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Create a new user
+    const newUser = await User.create({ email, password });
+
+    // Generate a token
+    const token = generateToken(newUser.id);
+
+    // Return the token and user info
+    res.status(201).json({
+      id: newUser.id,
+      email: newUser.email,
+      token,
+    });
+  } catch (error) {
+    console.error('Error registering user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Controller to get the user profile
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: { exclude: ['password'] },
-    });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.json(user);
+    // Return the authenticated user's profile
+    res.json(req.user);
   } catch (error) {
     console.error('Error fetching user profile:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// Update user profile
 const updateUserProfile = async (req, res) => {
-  const { firstName, lastName, email, phone } = req.body;
-
   try {
     const user = await User.findByPk(req.user.id);
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update user fields
+    const { firstName, lastName, email } = req.body;
+
     user.firstName = firstName || user.firstName;
     user.lastName = lastName || user.lastName;
     user.email = email || user.email;
-    user.phone = phone || user.phone;
 
     await user.save();
 
-    res.json({ message: 'Profile updated successfully' });
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+    });
   } catch (error) {
     console.error('Error updating user profile:', error);
     res.status(500).json({ message: 'Server error' });
@@ -111,8 +117,8 @@ const updateUserProfile = async (req, res) => {
 };
 
 module.exports = {
-  registerUser,
   loginUser,
+  registerUser,
   getUserProfile,
   updateUserProfile,
 };
