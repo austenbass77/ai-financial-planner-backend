@@ -1,6 +1,7 @@
 // controllers/userController.js
 const { User } = require('../models');
 const jwt = require('jsonwebtoken');
+const { Configuration, OpenAI } = require('openai');
 
 // Function to generate a JWT token
 const generateToken = (id) => {
@@ -116,9 +117,65 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+// Set up OpenAI API
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const handleChatMessage = async (req, res) => {
+  try {
+    const { message } = req.body;
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Send message to OpenAI for interpretation
+    const openaiResponse = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant that updates user profiles in a database. Interpret the user\'s message to extract first name, last name, and email updates. Respond with a structured JSON object like this: {"firstName": "", "lastName": "", "email": ""}.' },
+        { role: 'user', content: message },
+      ],
+      max_tokens: 150,
+    });
+
+    const botResponse = openaiResponse.choices[0].message.content.trim();
+    console.log('OpenAI Response:', botResponse);
+
+    // Parse the bot's response as JSON
+    let profileUpdates;
+    try {
+      profileUpdates = JSON.parse(botResponse);
+    } catch (error) {
+      console.error('Failed to parse OpenAI response as JSON:', error);
+      return res.json({ response: "I'm not sure how to handle that request. Please try rephrasing it." });
+    }
+
+    // Update the user's profile based on extracted entities
+    if (profileUpdates.firstName) {
+      user.firstName = profileUpdates.firstName;
+    }
+    if (profileUpdates.lastName) {
+      user.lastName = profileUpdates.lastName;
+    }
+    if (profileUpdates.email) {
+      user.email = profileUpdates.email;
+    }
+
+    await user.save();
+    return res.json({ response: 'Your profile has been updated successfully.' });
+  } catch (error) {
+    console.error('Error handling chat message:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   loginUser,
   registerUser,
   getUserProfile,
   updateUserProfile,
+  handleChatMessage,
 };

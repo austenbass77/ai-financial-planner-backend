@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { loginUser, registerUser, getUserProfile, updateUserProfile } = require('../controllers/userController');
+const { loginUser, registerUser, getUserProfile, updateUserProfile, handleChatMessage  } = require('../controllers/userController');
 const authenticateUser = require('../middleware/authenticateUser');
 
 // Route to register a new user
@@ -14,5 +14,8 @@ router.get('/profile', authenticateUser, getUserProfile);
 
 // Placeholder for future PUT route (update user profile)
 router.put('/profile', authenticateUser, updateUserProfile);
+
+// chat bot
+router.post('/chat', authenticateUser, handleChatMessage);
 
 module.exports = router;
