@@ -1,29 +1,30 @@
-const express = require("express");
-const cors = require("cors");
-const userRoutes = require("./routes/userRoutes");
-const authenticateUser = require('./middleware/authenticateUser');
+require('dotenv').config(); // Load environment variables from .env
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
 
-require("dotenv").config();
+// Import your routes and middleware
+const profileRoutes = require('./routes/profileRoutes');
+const chatRoutes = require('./routes/chatRoutes');
+const familyMembersRouter = require('./routes/familyMembers');
+const authenticateUser = require('./middleware/authenticateUser');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(express.json()); // Parse incoming JSON requests
+app.use(cors()); // Enable CORS for cross-origin requests
+app.use(morgan('dev')); // Logging middleware
 
 // Routes
-app.use("/api/users", userRoutes);
+app.use('/api/profile', authenticateUser, profileRoutes);
+app.use('/api/chat', authenticateUser, chatRoutes);
+app.use('/api/family-members', authenticateUser, familyMembersRouter);
 
-const profileRoutes = require("./routes/profileRoutes");
-app.use("/api/profiles", profileRoutes);
+// Error handling middleware (must come after routes)
+app.use(errorHandler);
 
-const chatRoutes = require("./routes/chatRoutes");
-app.use("/api/chat", chatRoutes);
-
-const familyMembersRouter = require("./routes/familyMembers");
-app.use("/api/family-members", authenticateUser, familyMembersRouter);
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// Start the server
+const port = process.env.PORT || 5000;
+app.listen(port, () => console.log(`Server running on port ${port}`));
