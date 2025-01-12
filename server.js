@@ -1,31 +1,29 @@
-require('dotenv').config(); // Load environment variables from .env
+require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
-
-// Import your routes and middleware
-const userRoutes = require('./routes/userRoutes'); // Import user routes
-const profileRoutes = require('./routes/profileRoutes');
-const chatRoutes = require('./routes/chatRoutes');
-const familyMembersRouter = require('./routes/familyMembers');
-const authenticateUser = require('./middleware/authenticateUser');
-const errorHandler = require('./middleware/errorHandler');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
 // Middleware
-app.use(express.json()); // Parse incoming JSON requests
-app.use(cors()); // Enable CORS for cross-origin requests
-app.use(morgan('dev')); // Logging middleware
+app.use(express.json());
+app.use(cors());
+app.use(morgan('dev'));
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log('MongoDB connected');
+}).catch((err) => {
+  console.error('MongoDB connection error:', err);
+});
 
 // Routes
-app.use('/api/users', userRoutes); // Use user routes under /api/users
-app.use('/api/profile', authenticateUser, profileRoutes);
-app.use('/api/chat', authenticateUser, chatRoutes);
-app.use('/api/family-members', authenticateUser, familyMembersRouter);
-
-// Error handling middleware (must come after routes)
-app.use(errorHandler);
+app.use('/api/users', userRoutes);
 
 // Start the server
 const port = process.env.PORT || 5000;
