@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
-const dbConfig = require('../config/db');
 
-const sequelize = new Sequelize(dbConfig.POSTGRES_URI, {
+// Use process.env to access POSTGRES_URI from the .env file
+const sequelize = new Sequelize(process.env.POSTGRES_URI, {
   dialect: 'postgres',
   logging: false,
 });
@@ -22,6 +22,7 @@ const db = {
   FamilyMember,
 };
 
+// Define associations
 User.hasOne(UserProfile, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 UserProfile.belongsTo(User, { foreignKey: 'user_id' });
 
