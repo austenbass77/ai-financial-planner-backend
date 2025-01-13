@@ -1,18 +1,27 @@
-const Sequelize = require('sequelize');
-const dbConfig = require('../config/db');
+// models/index.js
 
-// Initialize Sequelize instance
-const sequelize = new Sequelize(dbConfig.DATABASE_URL, {
+require('dotenv').config(); // Ensure .env is loaded
+
+const Sequelize = require('sequelize');
+
+// Get POSTGRES_URI from environment variables
+const dbUrl = process.env.POSTGRES_URI;
+
+if (!dbUrl) {
+  throw new Error('POSTGRES_URI is not defined in .env');
+}
+
+const sequelize = new Sequelize(dbUrl, {
   dialect: 'postgres',
   logging: false,
 });
 
-// Import models
+// Models
 const User = require('./User')(sequelize, Sequelize.DataTypes);
 const UserProfile = require('./UserProfile')(sequelize, Sequelize.DataTypes);
 const FamilyMember = require('./FamilyMember')(sequelize, Sequelize.DataTypes);
 
-// Define associations
+// Relationships
 User.hasOne(UserProfile, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 UserProfile.belongsTo(User, { foreignKey: 'user_id' });
 
