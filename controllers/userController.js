@@ -2,6 +2,7 @@
 const { User } = require('../models');
 const jwt = require('jsonwebtoken');
 const { Configuration, OpenAI } = require('openai');
+const bcrypt = require('bcryptjs'); // Use bcryptjs for hashing
 
 // Function to generate a JWT token
 const generateToken = (id) => {
@@ -10,26 +11,33 @@ const generateToken = (id) => {
   });
 };
 
-// Controller to handle user login
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ where: { email } });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+    console.log(`Finding user with email: ${email}`);
+    const user = await db.User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // Compare hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
 
-    res.json({
+    // Generate JWT token
+    const token = generateToken(user.id);
+    res.status(200).json({
       id: user.id,
       email: user.email,
       token,
     });
   } catch (error) {
     console.error('Error logging in user:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 };
 
