@@ -1,15 +1,18 @@
 const Sequelize = require('sequelize');
-const dbConfig = require('../config/db');
+require('dotenv').config(); // Ensure .env is loaded
 
-const sequelize = new Sequelize(dbConfig.POSTGRES_URI, {
+// Use POSTGRES_URI from the .env file
+const sequelize = new Sequelize(process.env.POSTGRES_URI, {
   dialect: 'postgres',
   logging: false,
 });
 
+// Import models
 const User = require('./User')(sequelize);
 const UserProfile = require('./UserProfile')(sequelize);
 const FamilyMember = require('./FamilyMember')(sequelize);
 
+// Define relationships
 const db = {
   sequelize,
   Sequelize,
