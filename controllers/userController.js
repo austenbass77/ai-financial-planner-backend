@@ -1,44 +1,94 @@
-require('dotenv').config(); // Ensure .env is loaded
-const { db } = require('../models'); // Import the db object
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs'); // Updated to bcryptjs
+const { User } = require('../models');
+const { validationResult } = require('express-validator');
 
-// Generate JWT Token
-const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '30d' });
+// Register User
+exports.registerUser = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { username, email, password } = req.body;
+
+  try {
+    // Check if user already exists
+    const userExists = await User.findOne({ where: { email } });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10); // Generate salt
+    const hashedPassword = await bcrypt.hash(password, salt); // Hash password
+
+    // Create new user
+    const newUser = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
+
+    res.status(201).json({ message: 'User registered successfully', user: newUser });
+  } catch (err) {
+    console.error('Error registering user:', err); // Error logging
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
-// Login User
-const loginUser = async (req, res) => {
+// Get User Profile
+exports.getUserProfile = async (req, res) => {
+  const userId = req.user.id; // Assuming the user ID is stored in the JWT payload or session
+
   try {
-    const { email, password } = req.body;
-
-    console.log(`Finding user with email: ${email}`);
-    const user = await db.User.findOne({ where: { email } });
-
+    const user = await User.findByPk(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Compare hashed password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Generate JWT token
-    const token = generateToken(user.id);
-    res.status(200).json({
-      id: user.id,
-      email: user.email,
-      token,
-    });
-  } catch (error) {
-    console.error('Error logging in user:', error);
-    res.status(500).json({ message: 'Server error. Please try again later.' });
+    res.status(200).json({ user });
+  } catch (err) {
+    console.error('Error retrieving user profile:', err); // Error logging
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-module.exports = {
-  loginUser,
+// Update User Profile
+exports.updateUserProfile = async (req, res) => {
+  const userId = req.user.id; // Assuming the user ID is stored in the JWT payload or session
+  const { username, email } = req.body;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update user profile details
+    await user.update({ username, email });
+
+    res.status(200).json({ message: 'User profile updated successfully', user });
+  } catch (err) {
+    console.error('Error updating user profile:', err); // Error logging
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Handle Chat Message (Example: Saving user chat messages)
+exports.handleChatMessage = async (req, res) => {
+  const userId = req.user.id; // Assuming the user ID is stored in the JWT payload or session
+  const { message } = req.body;
+
+  try {
+    // Assuming you have a ChatMessage model or similar to store chat messages
+    const chatMessage = await ChatMessage.create({
+      userId,
+      message,
+    });
+
+    res.status(201).json({ message: 'Message sent successfully', chatMessage });
+  } catch (err) {
+    console.error('Error handling chat message:', err); // Error logging
+    res.status(500).json({ message: 'Server error' });
+  }
 };
