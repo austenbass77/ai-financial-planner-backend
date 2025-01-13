@@ -3,7 +3,7 @@ const { User } = require('../models');
 const { validationResult } = require('express-validator');
 
 // Register User
-exports.registerUser = async (req, res) => {
+const registerUser = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -37,7 +37,7 @@ exports.registerUser = async (req, res) => {
 };
 
 // Get User Profile
-exports.getUserProfile = async (req, res) => {
+const getUserProfile = async (req, res) => {
   const userId = req.user.id; // Assuming the user ID is stored in the JWT payload or session
 
   try {
@@ -54,7 +54,7 @@ exports.getUserProfile = async (req, res) => {
 };
 
 // Update User Profile
-exports.updateUserProfile = async (req, res) => {
+const updateUserProfile = async (req, res) => {
   const userId = req.user.id; // Assuming the user ID is stored in the JWT payload or session
   const { username, email } = req.body;
 
@@ -75,7 +75,7 @@ exports.updateUserProfile = async (req, res) => {
 };
 
 // Handle Chat Message (Example: Saving user chat messages)
-exports.handleChatMessage = async (req, res) => {
+const handleChatMessage = async (req, res) => {
   const userId = req.user.id; // Assuming the user ID is stored in the JWT payload or session
   const { message } = req.body;
 
@@ -91,4 +91,11 @@ exports.handleChatMessage = async (req, res) => {
     console.error('Error handling chat message:', err); // Error logging
     res.status(500).json({ message: 'Server error' });
   }
+};
+
+module.exports = {
+  registerUser,
+  getUserProfile,
+  updateUserProfile,
+  handleChatMessage
 };
