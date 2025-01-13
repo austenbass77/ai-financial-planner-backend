@@ -1,4 +1,5 @@
 const Sequelize = require('sequelize');
+require('dotenv').config(); // Ensure .env is loaded
 
 // Use process.env to access POSTGRES_URI from the .env file
 const sequelize = new Sequelize(process.env.POSTGRES_URI, {
