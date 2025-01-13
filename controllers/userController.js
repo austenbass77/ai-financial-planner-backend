@@ -36,6 +36,31 @@ const registerUser = async (req, res) => {
   }
 };
 
+// Login User
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Check if user exists
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password); // Updated to bcryptjs
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Respond with user info (you may want to add a JWT token here)
+    res.status(200).json({ message: 'Login successful', user });
+  } catch (err) {
+    console.error('Error logging in user:', err); // Error logging
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Get User Profile
 const getUserProfile = async (req, res) => {
   const userId = req.user.id; // Assuming the user ID is stored in the JWT payload or session
@@ -95,6 +120,7 @@ const handleChatMessage = async (req, res) => {
 
 module.exports = {
   registerUser,
+  loginUser, // Added loginUser back in
   getUserProfile,
   updateUserProfile,
   handleChatMessage
