@@ -1,8 +1,9 @@
-const { DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  const User = sequelize.define(
-    'User',
+  class User extends Model {}
+
+  User.init(
     {
       id: {
         type: DataTypes.INTEGER,
@@ -18,18 +19,24 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      createdAt: {
+      created_at: {
         type: DataTypes.DATE,
+        allowNull: false,
         defaultValue: DataTypes.NOW,
+        field: 'created_at', // Maps to `created_at` in the database
       },
-      updatedAt: {
+      updated_at: {
         type: DataTypes.DATE,
+        allowNull: false,
         defaultValue: DataTypes.NOW,
+        field: 'updated_at', // Maps to `updated_at` in the database
       },
     },
     {
-      tableName: 'users',
-      timestamps: false,
+      sequelize,
+      modelName: 'User',
+      tableName: 'users', // Ensure the table name is correct
+      timestamps: false, // Disable Sequelize’s automatic timestamps
     }
   );
 
