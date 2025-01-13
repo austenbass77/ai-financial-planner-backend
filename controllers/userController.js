@@ -14,27 +14,14 @@ const generateToken = (id) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Find the user by email
-    console.log('Finding user with email:', email);
     const user = await User.findOne({ where: { email } });
 
-    // Check if user exists
-    if (!user) {
-      console.log('User not found');
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Check if password matches
-    if (user.password !== password) {
-      console.log('Incorrect password');
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Generate a token
-    const token = generateToken(user.id);
-
-    // Return the token and user info
     res.json({
       id: user.id,
       email: user.email,

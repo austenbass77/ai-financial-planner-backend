@@ -1,26 +1,30 @@
-// models/index.js
-const { Sequelize } = require('sequelize');
-const UserModel = require('./User');
+const Sequelize = require('sequelize');
+const dbConfig = require('../config/db');
 
-// Create a new Sequelize instance
-const sequelize = new Sequelize(process.env.POSTGRES_URI, {
+// Initialize Sequelize instance
+const sequelize = new Sequelize(dbConfig.DATABASE_URL, {
   dialect: 'postgres',
   logging: false,
 });
 
-// Initialize models
-const User = UserModel(sequelize);
+// Import models
+const User = require('./User')(sequelize, Sequelize.DataTypes);
+const UserProfile = require('./UserProfile')(sequelize, Sequelize.DataTypes);
+const FamilyMember = require('./FamilyMember')(sequelize, Sequelize.DataTypes);
 
-// Sync the models with the database
-sequelize.sync({ alter: true })
-  .then(() => {
-    console.log('Database synced');
-  })
-  .catch((err) => {
-    console.error('Error syncing database:', err);
-  });
+// Define associations
+User.hasOne(UserProfile, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+UserProfile.belongsTo(User, { foreignKey: 'user_id' });
 
-module.exports = {
+User.hasMany(FamilyMember, { foreignKey: 'account_id', onDelete: 'CASCADE' });
+FamilyMember.belongsTo(User, { foreignKey: 'account_id' });
+
+const db = {
   sequelize,
+  Sequelize,
   User,
+  UserProfile,
+  FamilyMember,
 };
+
+module.exports = db;
