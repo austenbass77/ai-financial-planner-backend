@@ -1,32 +1,14 @@
-// models/index.js
-
-require('dotenv').config(); // Ensure .env is loaded
-
 const Sequelize = require('sequelize');
+const dbConfig = require('../config/db');
 
-// Get POSTGRES_URI from environment variables
-const dbUrl = process.env.POSTGRES_URI;
-
-if (!dbUrl) {
-  throw new Error('POSTGRES_URI is not defined in .env');
-}
-
-const sequelize = new Sequelize(dbUrl, {
+const sequelize = new Sequelize(dbConfig.POSTGRES_URI, {
   dialect: 'postgres',
   logging: false,
 });
 
-// Models
-const User = require('./User')(sequelize, Sequelize.DataTypes);
-const UserProfile = require('./UserProfile')(sequelize, Sequelize.DataTypes);
-const FamilyMember = require('./FamilyMember')(sequelize, Sequelize.DataTypes);
-
-// Relationships
-User.hasOne(UserProfile, { foreignKey: 'user_id', onDelete: 'CASCADE' });
-UserProfile.belongsTo(User, { foreignKey: 'user_id' });
-
-User.hasMany(FamilyMember, { foreignKey: 'account_id', onDelete: 'CASCADE' });
-FamilyMember.belongsTo(User, { foreignKey: 'account_id' });
+const User = require('./User')(sequelize);
+const UserProfile = require('./UserProfile')(sequelize);
+const FamilyMember = require('./FamilyMember')(sequelize);
 
 const db = {
   sequelize,
@@ -35,5 +17,11 @@ const db = {
   UserProfile,
   FamilyMember,
 };
+
+User.hasOne(UserProfile, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+UserProfile.belongsTo(User, { foreignKey: 'user_id' });
+
+User.hasMany(FamilyMember, { foreignKey: 'account_id', onDelete: 'CASCADE' });
+FamilyMember.belongsTo(User, { foreignKey: 'account_id' });
 
 module.exports = db;

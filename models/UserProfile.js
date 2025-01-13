@@ -1,5 +1,9 @@
-module.exports = (sequelize, DataTypes) => {
-    return sequelize.define('UserProfile', {
+const { DataTypes } = require('sequelize');
+
+module.exports = (sequelize) => {
+  const UserProfile = sequelize.define(
+    'UserProfile',
+    {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -11,15 +15,26 @@ module.exports = (sequelize, DataTypes) => {
       },
       first_name: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       last_name: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       phone: {
         type: DataTypes.STRING,
+        allowNull: true,
       },
-    });
-  };
-  
+      created_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+      },
+    },
+    {
+      tableName: 'user_profiles',
+      timestamps: false,
+    }
+  );
+
+  return UserProfile;
+};
