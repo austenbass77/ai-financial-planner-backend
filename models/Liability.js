@@ -1,32 +1,29 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class UserProfile extends Model {}
+  class Liability extends Model {}
 
-  UserProfile.init(
+  Liability.init(
     {
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      first_name: {
+      liability_name: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      last_name: {
-        type: DataTypes.STRING,
+      liability_value: {
+        type: DataTypes.DECIMAL,
         allowNull: false,
-      },
-      phone: {
-        type: DataTypes.STRING,
       },
     },
     {
       sequelize,
-      modelName: 'UserProfile',
+      modelName: 'Liability',
       timestamps: true,
     }
   );
 
-  return UserProfile;
+  return Liability;
 };

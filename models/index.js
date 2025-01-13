@@ -1,28 +1,35 @@
 const Sequelize = require('sequelize');
-require('dotenv').config(); // Ensure .env is loaded
+const dbConfig = require('../config/db');
 
-// Use POSTGRES_URI from the .env file
-const sequelize = new Sequelize(process.env.POSTGRES_URI, {
+const sequelize = new Sequelize(dbConfig.POSTGRES_URI, {
   dialect: 'postgres',
   logging: false,
 });
 
-// Import models
-const User = require('./User')(sequelize);
-const UserProfile = require('./UserProfile')(sequelize);
-const FamilyMember = require('./FamilyMember')(sequelize);
+const User = require('./User')(sequelize, Sequelize.DataTypes);
+const UserProfile = require('./UserProfile')(sequelize, Sequelize.DataTypes);
+const Asset = require('./Asset')(sequelize, Sequelize.DataTypes);
+const Liability = require('./Liability')(sequelize, Sequelize.DataTypes);
+const FamilyMember = require('./FamilyMember')(sequelize, Sequelize.DataTypes);
 
-// Define relationships
 const db = {
   sequelize,
   Sequelize,
   User,
   UserProfile,
+  Asset,
+  Liability,
   FamilyMember,
 };
 
 User.hasOne(UserProfile, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 UserProfile.belongsTo(User, { foreignKey: 'user_id' });
+
+User.hasMany(Asset, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+Asset.belongsTo(User, { foreignKey: 'user_id' });
+
+User.hasMany(Liability, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+Liability.belongsTo(User, { foreignKey: 'user_id' });
 
 User.hasMany(FamilyMember, { foreignKey: 'account_id', onDelete: 'CASCADE' });
 FamilyMember.belongsTo(User, { foreignKey: 'account_id' });

@@ -1,26 +1,29 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class User extends Model {}
+  class Asset extends Model {}
 
-  User.init(
+  Asset.init(
     {
-      email: {
+      user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      asset_name: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
       },
-      password: {
-        type: DataTypes.STRING,
+      asset_value: {
+        type: DataTypes.DECIMAL,
         allowNull: false,
       },
     },
     {
       sequelize,
-      modelName: 'User',
+      modelName: 'Asset',
       timestamps: true,
     }
   );
 
-  return User;
+  return Asset;
 };
