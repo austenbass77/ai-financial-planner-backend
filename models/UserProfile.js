@@ -1,8 +1,9 @@
-const { DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  const UserProfile = sequelize.define(
-    'UserProfile',
+  class UserProfile extends Model {}
+
+  UserProfile.init(
     {
       id: {
         type: DataTypes.INTEGER,
@@ -27,10 +28,20 @@ module.exports = (sequelize) => {
       },
       created_at: {
         type: DataTypes.DATE,
+        allowNull: false,
         defaultValue: DataTypes.NOW,
+        field: 'created_at',
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+        field: 'updated_at',
       },
     },
     {
+      sequelize,
+      modelName: 'UserProfile',
       tableName: 'user_profiles',
       timestamps: false,
     }

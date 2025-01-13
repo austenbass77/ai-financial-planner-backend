@@ -1,8 +1,9 @@
-const { DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  const FamilyMember = sequelize.define(
-    'FamilyMember',
+  class FamilyMember extends Model {}
+
+  FamilyMember.init(
     {
       id: {
         type: DataTypes.INTEGER,
@@ -30,7 +31,7 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       birth_date: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: true,
       },
       email: {
@@ -43,14 +44,20 @@ module.exports = (sequelize) => {
       },
       created_at: {
         type: DataTypes.DATE,
+        allowNull: false,
         defaultValue: DataTypes.NOW,
+        field: 'created_at',
       },
       updated_at: {
         type: DataTypes.DATE,
+        allowNull: false,
         defaultValue: DataTypes.NOW,
+        field: 'updated_at',
       },
     },
     {
+      sequelize,
+      modelName: 'FamilyMember',
       tableName: 'family_members',
       timestamps: false,
     }

@@ -23,20 +23,20 @@ module.exports = (sequelize) => {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
-        field: 'created_at', // Maps to `created_at` in the database
+        field: 'created_at', // Explicit mapping
       },
       updated_at: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
-        field: 'updated_at', // Maps to `updated_at` in the database
+        field: 'updated_at', // Explicit mapping
       },
     },
     {
       sequelize,
       modelName: 'User',
-      tableName: 'users', // Ensure the table name is correct
-      timestamps: false, // Disable Sequelize’s automatic timestamps
+      tableName: 'users', // Ensure the table name matches
+      timestamps: false, // Disable automatic timestamps
     }
   );
 
